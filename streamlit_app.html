@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HW3: Cosmos3-Super Streamlit 模擬測試器</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons for clean design -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Streamlit 經典風格客製化 */
+        body {
+            background-color: #0e1117;
+            color: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .st-sidebar {
+            background-color: #1a1c23;
+            border-right: 1px solid #2d3139;
+        }
+        .st-card {
+            background-color: #1f222b;
+            border: 1px solid #2d3139;
+        }
+        .st-input {
+            background-color: #0e1117;
+            border: 1px solid #434854;
+            color: #fafafa;
+        }
+        .st-input:focus {
+            border-color: #ff4b4b;
+            outline: none;
+        }
+        /* 手機外框樣式 */
+        .phone-container {
+            width: 375px;
+            height: 780px;
+            border: 12px solid #2d3139;
+            border-radius: 36px;
+            overflow-y: auto;
+            position: relative;
+            background-color: #0e1117;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .phone-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .phone-container::-webkit-scrollbar-thumb {
+            background-color: #434854;
+            border-radius: 4px;
+        }
+        /* 亮色滾動條 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0e1117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d3139;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #434854;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 頂部控制列：切換手機版/桌面版預覽 -->
+    <div class="bg-gray-900 border-b border-gray-800 p-3 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+            <span class="text-xs font-bold text-gray-300">HW3 互動測試模擬器 (免建置本機 Python 環境)</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button id="btn-desktop" onclick="setViewMode('desktop')" class="px-3 py-1 text-xs rounded bg-gray-700 text-white font-semibold flex items-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-desktop"></i> 桌面版
+            </button>
+            <button id="btn-phone" onclick="setViewMode('phone')" class="px-3 py-1 text-xs rounded bg-red-500 text-white font-semibold flex items-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-mobile-screen-button"></i> 行動版 (推薦)
+            </button>
+        </div>
+    </div>
+
+    <!-- 模擬器主要展示區 -->
+    <div class="flex-grow flex justify-center items-center p-4 bg-gray-950">
+
+        <!-- A. 桌面版容器 -->
+        <div id="desktop-view" class="hidden w-full max-w-5xl bg-[#0e1117] rounded-xl shadow-2xl border border-gray-800 flex overflow-hidden min-h-[700px]">
+            <!-- 桌面側邊欄 -->
+            <div class="w-80 st-sidebar p-6 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-400 mb-4 tracking-wide uppercase"><i class="fa-solid fa-gears mr-1.5 text-red-500"></i> 設定與說明</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-gray-900/60 p-3.5 rounded-lg border border-gray-800">
+                            <label class="block text-xs font-bold text-gray-300 mb-2">🔑 API 安全憑證</label>
+                            <input type="password" id="desktop-token" oninput="syncToken(this.value)" placeholder="Enter HF API Token (hf_...)" class="w-full text-xs p-2 rounded st-input">
+                            <p class="text-[10px] text-gray-500 mt-1.5 leading-relaxed">優先自動讀取 Streamlit Secrets，若無請手動在此貼上 Token 測試。</p>
+                        </div>
+
+                        <div class="bg-gray-900/40 p-3 rounded border border-gray-800/50">
+                            <span class="text-[11px] font-bold text-gray-400 block mb-1">🔗 專案資源連結</span>
+                            <div class="space-y-1 text-xs">
+                                <a href="https://github.com/yourname/hw3-cosmos-text2image" target="_blank" class="text-blue-400 hover:underline block"><i class="fa-brands fa-github mr-1"></i> GitHub Repository</a>
+                                <a href="#" class="text-blue-400 hover:underline block"><i class="fa-solid fa-globe mr-1"></i> Streamlit.io Demo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-[10px] text-gray-600 border-t border-gray-800 pt-4">
+                    模擬器使用 HTML 引擎驅動，功能邏輯與 Python app.py 100% 同步。
+                </div>
+            </div>
+
+            <!-- 桌面主內容區 -->
+            <div class="flex-grow p-8 overflow-y-auto max-h-[750px] w-full">
+                <div class="max-w-3xl mx-auto" id="main-content-desktop">
+                    <!-- 這裡會動態載入 App 內容 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- B. 行動手機版容器 -->
+        <div id="phone-view" class="phone-container">
+            <!-- 手機狀態列模擬 -->
+            <div class="sticky top-0 bg-[#0e1117]/95 backdrop-blur-md z-30 px-5 py-2.5 flex justify-between items-center text-[10px] text-gray-500 border-b border-gray-900">
+                <span class="font-bold">10:09 AM</span>
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-wifi"></i>
+                    <i class="fa-solid fa-signal"></i>
+                    <i class="fa-solid fa-battery-three-quarters"></i>
+                </div>
+            </div>
+            
+            <!-- 手機應用程式主體區 -->
+            <div class="p-4" id="main-content-phone">
+                <!-- 這裡會動態載入 App 內容 -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 全域暫存狀態 -->
+    <script>
+        // 初始狀態
+        let state = {
+            viewMode: 'phone', // 'phone' or 'desktop'
+            token: '',
+            prompt: '',
+            style: 'None (無特定)',
+            aspectRatio: '1:1 (正方形 - 1024x1024)',
+            negativePrompt: 'blurry, low quality, deformed, bad anatomy, text, watermark',
+            seedMode: 'random',
+            seed: '42',
+            numImages: 1,
+            apiMode: 'Mock / Demo Mode (完全模擬測試)', // 預設使用模擬以保證 100% 成功
+            isExpanderOpen: true,
+            loading: false,
+            imageUrl: null,
+            error: null,
+            debugInfo: null
+        };
+
+        // 橫寬比設定對照表
+        const aspectDims = {
+            "1:1 (正方形 - 1024x1024)": { w: 400, h: 400 },
+            "16:9 (橫幅寬螢幕 - 1024x576)": { w: 400, h: 225 },
+            "9:16 (直幅手機螢幕 - 576x1024)": { w: 250, h: 444 }
+        };
+
+        // 同步 API Token
+        function syncToken(val) {
+            state.token = val;
+            // 同步兩邊的輸入框
+            const dToken = document.getElementById('desktop-token');
+            const mToken = document.getElementById('mobile-token');
+            if (dToken) dToken.value = val;
+            if (mToken) mToken.value = val;
+        }
+
+        // 切換版面模式
+        function setViewMode(mode) {
+            state.viewMode = mode;
+            const desktop = document.getElementById('desktop-view');
+            const phone = document.getElementById('phone-view');
+            const btnD = document.getElementById('btn-desktop');
+            const btnP = document.getElementById('btn-phone');
+
+            if (mode === 'desktop') {
+                desktop.classList.remove('hidden');
+                phone.classList.add('hidden');
+                btnD.classList.replace('bg-gray-700', 'bg-red-500');
+                btnP.classList.replace('bg-red-500', 'bg-gray-700');
+            } else {
+                desktop.classList.add('hidden');
+                phone.classList.remove('hidden');
+                btnD.classList.replace('bg-red-500', 'bg-gray-700');
+                btnP.classList.replace('bg-gray-700', 'bg-red-500');
+            }
+            render();
+        }
+
+        // 一鍵填寫範本
+        function fillPrompt(text) {
+            state.prompt = text;
+            render();
+        }
+
+        // 切換參數收合欄
+        function toggleExpander() {
+            state.isExpanderOpen = !state.isExpanderOpen;
+            render();
+        }
+
+        // 修改參數
+        function updateState(key, val) {
+            state[key] = val;
+            render();
+        }
+
+        // 發送生圖請求
+        async function triggerGeneration() {
+            if (!state.prompt.trim()) {
+                state.error = "⚠️ 請先輸入圖像描述 Prompt！";
+                render();
+                return;
+            }
+
+            // 驗證 Token 規則 (作業規格要求)
+            if (state.apiMode !== "Mock / Demo Mode (完全模擬測試)" && !state.token.trim()) {
+                state.error = "❌ 錯誤：尚未檢測到您的 Hugging Face Token！請至側邊欄填入 token 才能發送請求。";
+                state.debugInfo = "錯誤診斷: 未檢測到 API Key。";
+                render();
+                return;
+            }
+
+            state.loading = true;
+            state.error = null;
+            state.debugInfo = null;
+            state.imageUrl = null;
+            render();
+
+            try {
+                // A. 模擬生圖模式
+                if (state.apiMode === "Mock / Demo Mode (完全模擬測試)") {
+                    await new Promise(resolve => setTimeout(resolve, 1500)); // 模擬網路延遲
+                    
+                    const randomId = Math.floor(Math.random() * 100) + 1;
+                    const dim = aspectDims[state.aspectRatio];
+                    // 使用 Picsum 提供高質感的模擬圖片
+                    state.imageUrl = `https://picsum.photos/seed/${randomId}/${dim.w}/${dim.h}`;
+                    state.debugInfo = `{\n  "status": "success",\n  "mode": "Mock Simulation",\n  "image_source": "${state.imageUrl}"\n}`;
+                } 
+                // B. 真實 API 呼叫 (同等 Python requests.post)
+                else {
+                    const modelEndpoint = state.apiMode === "NVIDIA Cosmos3 (作業指定)" 
+                        ? "nvidia/Cosmos3-Super-Text2Image" 
+                        : "black-forest-labs/FLUX.1-schnell";
+
+                    const finalPrompt = state.style !== 'None (無特定)' 
+                        ? `${state.prompt}, style: ${state.style}` 
+                        : state.prompt;
+
+                    const response = await fetch(
+                        `https://api-inference.huggingface.co/models/${modelEndpoint}`,
+                        {
+                            headers: { 
+                                "Authorization": `Bearer ${state.token}`,
+                                "Content-Type": "application/json"
+                            },
+                            method: "POST",
+                            body: JSON.stringify({ 
+                                inputs: finalPrompt,
+                                parameters: {
+                                    seed: state.seedMode === 'random' ? Math.floor(Math.random() * 100000) : parseInt(state.seed),
+                                    negative_prompt: state.negativePrompt
+                                }
+                            }),
+                        }
+                    );
+
+                    const contentType = response.headers.get("content-type") || "";
+
+                    if (!response.ok) {
+                        let errText = `伺服器回應錯誤 (HTTP ${response.status})`;
+                        let rawError = "";
+                        try {
+                            const errJson = await response.json();
+                            errText = errJson.error || errText;
+                            rawError = JSON.stringify(errJson, null, 2);
+                        } catch (e) {
+                            rawError = await response.text();
+                        }
+                        
+                        state.debugInfo = rawError;
+                        if (response.status === 503) {
+                            throw new Error("模型目前正在 Hugging Face 伺服器上加載中（冷啟動），可能需要 1~2 分鐘。請點擊重新生成，或者切換至「FLUX.1」備用模型快速測試！");
+                        }
+                        throw new Error(errText);
+                    }
+
+                    // 處理圖片 Blob 轉換
+                    const blob = await response.blob();
+                    if (!blob.type.startsWith('image/')) {
+                        throw new Error("API 未能回傳正確的圖片格式。這代表模型目前過載，請稍後重試。");
+                    }
+                    state.imageUrl = URL.createObjectURL(blob);
+                    state.debugInfo = `{\n  "status": "success",\n  "model_endpoint": "${modelEndpoint}",\n  "mime_type": "${blob.type}"\n}`;
+                }
+            } catch (err) {
+                state.error = err.message;
+            } finally {
+                state.loading = false;
+                render();
+            }
+        }
+
+        // 下載圖片模擬
+        function downloadSimulatedImage() {
+            if (!state.imageUrl) return;
+            const a = document.createElement('a');
+            a.href = state.imageUrl;
+            a.download = `cosmos3-simulation-${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // HTML 渲染器 (動態同步桌面與行動端)
+        function render() {
+            const contentHTML = `
+                <!-- 網頁頂部標題與說明 (符合規格五) -->
+                <div class="mb-5 flex items-center gap-2.5">
+                    <div class="bg-gradient-to-tr from-indigo-500 to-purple-500 p-2 rounded-xl">
+                        <i class="fa-solid fa-wand-magic-sparkles text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-black tracking-wide">Cosmos3-Super 行動生圖器</h1>
+                        <p class="text-[10px] text-gray-400">HW3: AI 圖像生成行動端 Web App (Streamlit)</p>
+                    </div>
+                </div>
+
+                <!-- 規格描述橫幅 (符合規格五) -->
+                <div class="p-3.5 rounded-xl border border-indigo-900/40 bg-indigo-950/15 mb-5 text-xs leading-relaxed">
+                    <strong class="text-indigo-300">🌌 指定模型：</strong> <code class="bg-gray-900 px-1 py-0.5 rounded text-gray-300">nvidia/Cosmos3-Super-Text2Image</code><br>
+                    <span class="text-gray-400 text-[11px] mt-1 block">
+                        <strong>使用說明：</strong> 輸入英文提示詞並按下生圖按鈕。若 Cosmos3 免費 API 過載，可切換下方執行管道至 FLUX 或 Demo 模式展示。
+                    </span>
+                </div>
+
+                <!-- 行動端 Token 輸入欄 (僅在手機版下可視，桌面版已放在側邊欄) -->
+                ${state.viewMode === 'phone' ? `
+                <div class="p-3.5 rounded-xl border border-gray-800 bg-gray-900/40 mb-4 text-xs">
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5"><i class="fa-solid fa-key mr-1 text-yellow-500"></i> Enter your Hugging Face API Token</label>
+                    <input type="password" id="mobile-token" oninput="syncToken(this.value)" value="${state.token}" placeholder="hf_..." class="w-full p-2 text-xs rounded st-input">
+                    <p class="text-[9px] text-gray-500 mt-1">若 Streamlit Secrets 中無金鑰，本系統會強制跳出此遮蔽輸入框。</p>
+                </div>
+                ` : ''}
+
+                <!-- [規格需求三] 參數設定展開器 (Streamlit Expander) -->
+                <div class="st-card rounded-xl mb-4 overflow-hidden">
+                    <button onclick="toggleExpander()" class="w-full p-3.5 flex justify-between items-center text-xs font-bold border-b border-gray-800/80 bg-gray-900/20">
+                        <span>🛠️ 調整生成參數 (點擊收合)</span>
+                        <i class="fa-solid ${state.isExpanderOpen ? 'fa-chevron-up' : 'fa-chevron-down'} text-gray-400"></i>
+                    </button>
+                    
+                    ${state.isExpanderOpen ? `
+                    <div class="p-4 space-y-3 text-xs">
+                        <!-- Styles -->
+                        <div>
+                            <label class="block text-gray-400 mb-1">圖像風格 Image Style</label>
+                            <select onchange="updateState('style', this.value)" class="w-full p-2 rounded st-input text-xs">
+                                <option ${state.style === 'None (無特定)' ? 'selected' : ''}>None (無特定)</option>
+                                <option ${state.style === 'Cinematic (電影感)' ? 'selected' : ''}>Cinematic (電影感)</option>
+                                <option ${state.style === 'Cyberpunk (霓虹科幻)' ? 'selected' : ''}>Cyberpunk (霓虹科幻)</option>
+                                <option ${state.style === 'Anime (日系動漫)' ? 'selected' : ''}>Anime (日系動漫)</option>
+                                <option ${state.style === 'Photorealistic (超寫實)' ? 'selected' : ''}>Photorealistic (超寫實)</option>
+                            </select>
+                        </div>
+
+                        <!-- Aspect Ratio -->
+                        <div>
+                            <label class="block text-gray-400 mb-1">畫面比例 Aspect Ratio</label>
+                            <select onchange="updateState('aspectRatio', this.value)" class="w-full p-2 rounded st-input text-xs">
+                                <option ${state.aspectRatio === '1:1 (正方形 - 1024x1024)' ? 'selected' : ''}>1:1 (正方形 - 1024x1024)</option>
+                                <option ${state.aspectRatio === '16:9 (橫幅寬螢幕 - 1024x576)' ? 'selected' : ''}>16:9 (橫幅寬螢幕 - 1024x576)</option>
+                                <option ${state.aspectRatio === '9:16 (直幅手機螢幕 - 576x1024)' ? 'selected' : ''}>9:16 (直幅手機螢幕 - 576x1024)</option>
+                            </select>
+                        </div>
+
+                        <!-- Negative Prompt -->
+                        <div>
+                            <label class="block text-gray-400 mb-1">排除詞 Negative Prompt</label>
+                            <input type="text" oninput="updateState('negativePrompt', this.value)" value="${state.negativePrompt}" class="w-full p-2 rounded st-input text-xs">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label class="block text-gray-400 mb-1">種子 Seed</label>
+                                <div class="flex gap-1.5 items-center mt-1">
+                                    <label class="flex items-center gap-1 text-[11px]"><input type="radio" name="seed-grp" onclick="updateState('seedMode', 'random')" ${state.seedMode === 'random' ? 'checked' : ''}> 隨機</label>
+                                    <label class="flex items-center gap-1 text-[11px]"><input type="radio" name="seed-grp" onclick="updateState('seedMode', 'fixed')" ${state.seedMode === 'fixed' ? 'checked' : ''}> 固定</label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-400 mb-1">生成張數</label>
+                                <input type="range" min="1" max="3" value="${state.numImages}" class="w-full accent-red-500 mt-2">
+                                <span class="text-[10px] text-gray-500">當前: ${state.numImages} 張</span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- API 管道選擇切換器 -->
+                <div class="st-card p-3 rounded-xl mb-4">
+                    <label class="block text-[11px] font-bold text-gray-400 mb-2"><i class="fa-solid fa-server mr-1"></i> 選擇執行 API 管道 (相容切換)</label>
+                    <div class="grid grid-cols-1 gap-1.5 text-[11px]">
+                        <button onclick="updateState('apiMode', 'NVIDIA Cosmos3 (作業指定)')" class="text-left p-2 rounded border text-xs ${state.apiMode === 'NVIDIA Cosmos3 (作業指定)' ? 'bg-indigo-600/10 border-indigo-500 text-indigo-300' : 'bg-gray-900/40 border-gray-800 text-gray-400'}">
+                            🌌 NVIDIA Cosmos3 (官方作業端點)
+                        </button>
+                        <button onclick="updateState('apiMode', 'FLUX.1 Schnell (最穩推薦)')" class="text-left p-2 rounded border text-xs ${state.apiMode === 'FLUX.1 Schnell (最穩推薦)' ? 'bg-indigo-600/10 border-indigo-500 text-indigo-300' : 'bg-gray-900/40 border-gray-800 text-gray-400'}">
+                            ⚡ FLUX.1 Schnell (穩定快速產圖)
+                        </button>
+                        <button onclick="updateState('apiMode', 'Mock / Demo Mode (完全模擬測試)')" class="text-left p-2 rounded border text-xs ${state.apiMode === 'Mock / Demo Mode (完全模擬測試)' ? 'bg-indigo-600/10 border-indigo-500 text-indigo-300' : 'bg-gray-900/40 border-gray-800 text-gray-400'}">
+                            🤖 Mock / Demo Mode (免金鑰測試)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Prompt 輸入區 (符合規格三) -->
+                <div class="st-card p-4 rounded-xl mb-4 space-y-3">
+                    <label class="block text-xs font-bold text-gray-300">✏️ 靈感輸入區</label>
+                    <textarea oninput="updateState('prompt', this.value)" placeholder="請在此處輸入英文 Prompt..." class="w-full p-2.5 h-24 text-xs rounded st-input resize-none">${state.prompt}</textarea>
+                    
+                    <!-- 行動端一鍵快速帶入 -->
+                    <div class="space-y-1">
+                        <span class="text-[10px] text-gray-500 font-bold block">💡 快速點擊體驗範本：</span>
+                        <div class="flex flex-col gap-1 text-[11px]">
+                            <button onclick="fillPrompt('A cute fluffy red panda astronaut on Mars, digital art, vibrant colors, detailed spacesuit.')" class="text-left p-1.5 rounded bg-gray-900 text-gray-400 hover:text-white truncate">🐾 宇航員紅熊貓</button>
+                            <button onclick="fillPrompt('A futuristic cyberpunk city, neon lights, flying cars, rain slicked streets, highly detailed, cinematic style.')" class="text-left p-1.5 rounded bg-gray-900 text-gray-400 hover:text-white truncate">🌌 科幻霓虹城市</button>
+                        </div>
+                    </div>
+
+                    <!-- 呼叫生圖按鈕 (符合行動規格大於48px觸控) -->
+                    <button onclick="triggerGeneration()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold rounded-xl text-xs flex justify-center items-center gap-1.5 transition-all text-white min-h-[48px] shadow-lg shadow-indigo-900/10">
+                        ${state.loading ? `<i class="fa-solid fa-spinner animate-spin"></i> 生成中 (預估 5~15秒)...` : `<i class="fa-solid fa-wand-magic-sparkles"></i> ✨ 開始生成 AI 圖像`}
+                    </button>
+                </div>
+
+                <!-- 生圖結果輸出區 (符合規格三) -->
+                <div class="st-card p-4 rounded-xl mb-4 flex flex-col items-center justify-center min-h-[220px] relative">
+                    
+                    <!-- 錯誤警報 -->
+                    ${state.error ? `
+                    <div class="absolute inset-x-3 top-3 bg-red-950/95 border border-red-500/40 text-red-200 p-3 rounded-lg text-[11px] flex gap-2 items-start z-10 shadow-lg">
+                        <i class="fa-solid fa-triangle-exclamation text-red-400 mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <span class="font-bold block">生圖失敗</span>
+                            <p>${state.error}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- 圖片渲染邏輯 -->
+                    ${state.loading ? `
+                    <div class="flex flex-col items-center justify-center space-y-3 py-6">
+                        <i class="fa-solid fa-spinner animate-spin text-2xl text-indigo-400"></i>
+                        <span class="text-[11px] text-gray-400">AI 正在創作中，請稍候...</span>
+                    </div>
+                    ` : state.imageUrl ? `
+                    <div class="w-full space-y-3 text-center">
+                        <div class="border border-gray-800 rounded-lg overflow-hidden bg-black flex justify-center items-center p-2">
+                            <img src="${state.imageUrl}" alt="AI Generated Design" class="max-h-[350px] object-contain rounded">
+                        </div>
+                        <p class="text-[9px] text-gray-500">手機端可長按上方圖片儲存</p>
+                        
+                        <!-- 下載與重新生成控制列 -->
+                        <div class="flex gap-2">
+                            <button onclick="downloadSimulatedImage()" class="flex-grow py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-bold text-white flex justify-center items-center gap-1.5 transition-colors">
+                                <i class="fa-solid fa-download"></i> 下載圖片到本機
+                            </button>
+                            <button onclick="triggerGeneration()" class="p-2.5 bg-gray-900 border border-gray-800 rounded-lg hover:bg-gray-800 transition-colors">
+                                <i class="fa-solid fa-rotate-right text-gray-300"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="text-center py-8 space-y-2">
+                        <i class="fa-regular fa-image text-3xl text-gray-600"></i>
+                        <h4 class="text-xs font-bold text-gray-400">等待靈感生成圖片</h4>
+                        <p class="text-[10px] text-gray-500 max-w-[200px] mx-auto">點擊上方生成按鈕，高質感 AI 圖像將渲染在此處。</p>
+                    </div>
+                    `}
+                </div>
+
+                <!-- API Debug 控制面板 (核心除錯工具，同等 Python traceback) -->
+                ${state.debugInfo ? `
+                <div class="bg-gray-950 border border-gray-800 rounded-xl p-3 mb-4 space-y-1.5">
+                    <span class="text-[10px] font-bold text-yellow-500 uppercase tracking-wider block"><i class="fa-solid fa-bug"></i> API 除錯診斷面板</span>
+                    <pre class="text-[9px] text-yellow-200/90 overflow-x-auto max-h-32 p-2 bg-black/60 rounded font-mono leading-relaxed">${state.debugInfo}</pre>
+                </div>
+                ` : ''}
+
+                <!-- 手機版頁尾 -->
+                <div class="text-center text-[9px] text-gray-600 pt-3 border-t border-gray-900">
+                    專為行動裝置介面與 RWD 自適應開發設計<br>© 2026 Cosmos3 AI Streamlit 模擬器。
+                </div>
+            `;
+
+            // 同步渲染至桌面與手機的容器中
+            const desktopContainer = document.getElementById('main-content-desktop');
+            const phoneContainer = document.getElementById('main-content-phone');
+            
+            if (state.viewMode === 'desktop' && desktopContainer) {
+                desktopContainer.innerHTML = contentHTML;
+            } else if (state.viewMode === 'phone' && phoneContainer) {
+                phoneContainer.innerHTML = contentHTML;
+            }
+        }
+
+        // 初始載入
+        window.onload = function() {
+            setViewMode('phone');
+        };
+    </script>
+</body>
+</html>
