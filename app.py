@@ -119,7 +119,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 🔗 專案資源連結")
 # 此處建議學生部署後自行修改為正確的 repo 連結與 demo 連結
 st.sidebar.markdown("[📁 GitHub Repository](https://github.com/mrhuang55-creator/20260605-lesson-HW3-rewite)")
-st.sidebar.markdown("[🌐 Streamlit.io Cloud Demo](https://your-app-name.streamlit.app)")
+st.sidebar.markdown("[🌐 Streamlit.io Cloud Demo](https://20260605-leappn-hw3-rewitegit-gzko5beyuyvczgk6brwwuf.streamlit.app/)")
 
 # --- 主畫面標題與說明 (符合規範五) ---
 st.markdown("""

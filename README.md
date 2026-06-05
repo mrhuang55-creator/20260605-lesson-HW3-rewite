@@ -74,7 +74,7 @@ This app is designed for easy deployment to **Streamlit Community Cloud** (https
 ## Links
 
 * **GitHub Repo:** [https://github.com/mrhuang55-creator/20260605-lesson-HW3-rewite](https://github.com/mrhuang55-creator/20260605-lesson-HW3-rewite)
-* **Streamlit Demo:** [https://your-app-name.streamlit.app](https://your-app-name.streamlit.app)
+* **Streamlit Demo:** [https://20260605-leappn-hw3-rewitegit-gzko5beyuyvczgk6brwwuf.streamlit.app/](https://20260605-leappn-hw3-rewitegit-gzko5beyuyvczgk6brwwuf.streamlit.app/)
 
 ---
 
